@@ -18,29 +18,6 @@ Item {
     }
 
     Canvas {
-        id: dayCanvas
-        anchors.fill: parent
-        renderStrategy: Canvas.Cooperative
-
-        onPaint: {
-            const ctx = getContext("2d")
-            prepareContext(ctx)
-            ctx.textAlign = "center"
-            ctx.textBaseline = "middle"
-
-            const centerX = width * 0.35435
-            const centerY = height / 2 * 0.57
-            const verticalOffset = height * 0.05
-
-            const text = wallClock.time.toLocaleString(Qt.locale(), "dddd").toUpperCase()
-            const fontSize = height * 0.055
-
-            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
-            ctx.fillText(text, centerX, centerY + verticalOffset);
-        }
-    }
-
-    Canvas {
         id: hourCanvas
         anchors.fill: parent
         renderStrategy: Canvas.Cooperative
@@ -82,7 +59,7 @@ Item {
             const centerY = height / 2
             const verticalOffset = height * 0.112
 
-            const text = wallClock.time.toLocaleString(Qt.locale(), "mm")
+            const text = twoDigits(minute)
             const fontSize = height * 0.15
 
             ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
@@ -134,6 +111,29 @@ Item {
         }
     }
 
+    Canvas {
+        id: dayCanvas
+        anchors.fill: parent
+        renderStrategy: Canvas.Cooperative
+
+        onPaint: {
+            const ctx = getContext("2d")
+            prepareContext(ctx)
+            ctx.textAlign = "center"
+            ctx.textBaseline = "middle"
+
+            const centerX = width * 0.35435
+            const centerY = height / 2 * 0.57
+            const verticalOffset = height * 0.05
+
+            const text = wallClock.time.toLocaleString(Qt.locale(), "dddd").toUpperCase()
+            const fontSize = height * 0.055
+
+            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
+            ctx.fillText(text, centerX, centerY + verticalOffset);
+        }
+    }
+
     Connections {
         target: wallClock
         function onTimeChanged() {
@@ -150,9 +150,7 @@ Item {
                 minuteCanvas.requestPaint()
                 minuteArc.minute = minute
                 minuteArc.requestPaint()
-            }
 
-            if (minuteCanvas.minute % 10 == 0) {
                 dateCanvas.requestPaint()
                 dayCanvas.requestPaint()
             }
@@ -169,6 +167,7 @@ Item {
         minuteCanvas.requestPaint()
         minuteArc.minute = minute
         minuteArc.requestPaint()
+
         dateCanvas.requestPaint()
         dayCanvas.requestPaint()
 
@@ -186,6 +185,7 @@ Item {
             hourCanvas.requestPaint()
             minuteCanvas.requestPaint()
             minuteArc.requestPaint()
+
             dateCanvas.requestPaint()
             dayCanvas.requestPaint()
         }
