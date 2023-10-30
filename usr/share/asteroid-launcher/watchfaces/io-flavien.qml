@@ -2,10 +2,10 @@ import QtQuick 2.1
 
 Item {
     function twoDigits(x) {
-        if ( x < 10) {
-            return "0" + x;
+        if (x < 10) {
+            return "0" + x
         }
-        return x;
+        return x
     }
 
     function prepareContext(ctx) {
@@ -37,8 +37,8 @@ Item {
             const text = twoDigits(hour)
             const fontSize = height * 0.3
 
-            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
-            ctx.fillText(text, centerX, centerY + verticalOffset);
+            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'"
+            ctx.fillText(text, centerX, centerY + verticalOffset)
         }
     }
 
@@ -62,8 +62,8 @@ Item {
             const text = twoDigits(minute)
             const fontSize = height * 0.15
 
-            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
-            ctx.fillText(text, centerX, centerY + verticalOffset);
+            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'"
+            ctx.fillText(text, centerX, centerY + verticalOffset)
         }
     }
 
@@ -81,7 +81,7 @@ Item {
 
             ctx.reset()
             ctx.beginPath()
-            ctx.arc(width / 2, height / 2, width / 2.4, -90 * radian, rot * radian, false);
+            ctx.arc(width / 2, height / 2, width / 2.4, -90 * radian, rot * radian, false)
             ctx.lineWidth = width / 20
             ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.5)
             ctx.stroke()
@@ -93,6 +93,8 @@ Item {
         anchors.fill: parent
         renderStrategy: Canvas.Cooperative
 
+        property var date: "00 NO"
+
         onPaint: {
             const ctx = getContext("2d")
             prepareContext(ctx)
@@ -100,14 +102,14 @@ Item {
             ctx.textBaseline = "middle"
 
             const centerX = width * 0.5947
-            const centerY = height / 2 * 1.27
+            const centerY = height * 0.63
             const verticalOffset = height * 0.05
 
-            const text = wallClock.time.toLocaleString(Qt.locale(), "dd MMMM").toUpperCase()
+            const text = date.toUpperCase()
             const fontSize = height * 0.060
 
-            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
-            ctx.fillText(text, centerX, centerY + verticalOffset);
+            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'"
+            ctx.fillText(text, centerX, centerY + verticalOffset)
         }
     }
 
@@ -116,43 +118,52 @@ Item {
         anchors.fill: parent
         renderStrategy: Canvas.Cooperative
 
+        property var day: "MONDAY"
+
         onPaint: {
             const ctx = getContext("2d")
             prepareContext(ctx)
             ctx.textAlign = "center"
             ctx.textBaseline = "middle"
 
-            const centerX = width * 0.35435
-            const centerY = height / 2 * 0.57
+            const centerX = width * 0.375
+            const centerY = height * 0.3
             const verticalOffset = height * 0.05
 
-            const text = wallClock.time.toLocaleString(Qt.locale(), "dddd").toUpperCase()
+            const text = day.toUpperCase()
             const fontSize = height * 0.055
 
-            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'";
-            ctx.fillText(text, centerX, centerY + verticalOffset);
+            ctx.font = "0 " + fontSize + "px 'JetBrains Mono NL Medium'"
+            ctx.fillText(text, centerX, centerY + verticalOffset)
         }
     }
 
     Connections {
         target: wallClock
         function onTimeChanged() {
-            const hour = wallClock.time.getHours()
             const minute = wallClock.time.getMinutes()
-
-            if (hourCanvas.hour != hour) {
-                hourCanvas.hour = hour
-                hourCanvas.requestPaint()
-            }
             
-            if (minuteCanvas.minute != minute) {
+            if (minuteCanvas.minute.equals(minute)) {
+                const hour = wallClock.time.getHours()
+                const date = wallClock.time.toLocaleString(Qt.locale(), "dd MMMM")
+
                 minuteCanvas.minute = minute
                 minuteCanvas.requestPaint()
                 minuteArc.minute = minute
                 minuteArc.requestPaint()
 
-                dateCanvas.requestPaint()
-                dayCanvas.requestPaint()
+                if (hourCanvas.hour.equals(hour)) {
+                    hourCanvas.hour = hour
+                    hourCanvas.requestPaint()
+                }
+
+                if (dateCanvas.date.equals(date)) {
+                    dateCanvas.date = date
+                    dateCanvas.requestPaint()
+
+                    dayCanvas.day = wallClock.time.toLocaleString(Qt.locale(), "dddd")
+                    dayCanvas.requestPaint()
+                }
             }
         }
     }
@@ -160,15 +171,21 @@ Item {
     Component.onCompleted: {
         const hour = wallClock.time.getHours()
         const minute = wallClock.time.getMinutes()
+        const date = wallClock.time.toLocaleString(Qt.locale(), "dd MMMM")
+        const day = wallClock.time.toLocaleString(Qt.locale(), "dddd")
 
         hourCanvas.hour = hour
         hourCanvas.requestPaint()
+
         minuteCanvas.minute = minute
         minuteCanvas.requestPaint()
         minuteArc.minute = minute
         minuteArc.requestPaint()
 
+        dateCanvas.date = date
         dateCanvas.requestPaint()
+
+        dayCanvas.day = day
         dayCanvas.requestPaint()
 
         burnInProtectionManager.widthOffset = Qt.binding(function() {
@@ -185,7 +202,6 @@ Item {
             hourCanvas.requestPaint()
             minuteCanvas.requestPaint()
             minuteArc.requestPaint()
-
             dateCanvas.requestPaint()
             dayCanvas.requestPaint()
         }
