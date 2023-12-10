@@ -148,12 +148,12 @@ Item {
                 minuteArc.minute = minute
                 minuteArc.requestPaint()
 
-                if (!hourCanvas.hour != hour) {
+                if (hourCanvas.hour != hour) {
                     hourCanvas.hour = hour
                     hourCanvas.requestPaint()
                 }
 
-                if (!dateCanvas.date != date) {
+                if (dateCanvas.date != date) {
                     dateCanvas.date = date
                     dateCanvas.requestPaint()
 
