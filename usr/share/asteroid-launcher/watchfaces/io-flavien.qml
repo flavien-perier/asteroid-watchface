@@ -1,6 +1,13 @@
-import QtQuick 2.1
+import QtQuick 2.15
+import org.asteroid.controls 1.0
+import org.asteroid.utils 1.0
+import Nemo.Mce 1.0
 
 Item {
+    readonly property var startAngle: -Math.PI*0.5
+    readonly property var percentAngle: ((2 * Math.PI) / 100)
+    readonly property var minuteAngle: ((2 * Math.PI) / 60)
+
     function twoDigits(x) {
         if (x < 10) {
             return "0" + x
@@ -69,17 +76,17 @@ Item {
         id: minuteArc
         anchors.fill: parent
         renderStrategy: Canvas.Cooperative
+        visible: !displayAmbient
 
         property var minute: 0
 
         onPaint: {
             const ctx = getContext("2d")
-            const rot = (minute - 15 ) * 6
-            const radian = 0.01745
+            const endAngle = startAngle + minuteAngle * minute
 
             ctx.reset()
             ctx.beginPath()
-            ctx.arc(parent.width / 2, parent.height / 2, parent.width / 2.4, -90 * radian, rot * radian, false)
+            ctx.arc(parent.width / 2, parent.height / 2, parent.width / 2.4, startAngle, endAngle, false)
             ctx.lineWidth = parent.width / 20
             ctx.strokeStyle = Qt.rgba(1, 1, 1, 0.5)
             ctx.stroke()
@@ -90,6 +97,7 @@ Item {
         id: dateCanvas
         anchors.fill: parent
         renderStrategy: Canvas.Cooperative
+        visible: !displayAmbient
 
         property var date: "00 NO"
 
@@ -114,6 +122,7 @@ Item {
         id: dayCanvas
         anchors.fill: parent
         renderStrategy: Canvas.Cooperative
+        visible: !displayAmbient
 
         property var day: "MONDAY"
 
@@ -134,6 +143,35 @@ Item {
         }
     }
 
+    MceBatteryLevel {
+        id: batteryChargePercentage
+    }
+
+    Canvas {
+        id: batteryArc
+        anchors.fill: parent
+        renderStrategy: Canvas.Cooperative
+        visible: nightstand
+
+        onPaint: {
+            const ctx = getContext("2d")
+
+            const percent = batteryChargePercentage.percent
+
+            const endAngle=startAngle + percentAngle * percent
+
+            const red = 1 - (percent /100)
+            const green = percent /100
+
+            ctx.reset()
+            ctx.beginPath()
+            ctx.arc(parent.width / 2, parent.height / 2, parent.width / 2.2, startAngle, endAngle, false)
+            ctx.lineWidth = parent.width / 40
+            ctx.strokeStyle = Qt.rgba(red, green, 0, 0.5)
+            ctx.stroke()
+        }
+    }
+
     Connections {
         target: wallClock
         function onTimeChanged() {
@@ -147,6 +185,8 @@ Item {
                 minuteCanvas.requestPaint()
                 minuteArc.minute = minute
                 minuteArc.requestPaint()
+
+                batteryArc.requestPaint()
 
                 if (hourCanvas.hour != hour) {
                     hourCanvas.hour = hour
@@ -181,6 +221,7 @@ Item {
         minuteArc.requestPaint()
         dateCanvas.requestPaint()
         dayCanvas.requestPaint()
+        batteryArc.requestPaint()
 
         burnInProtectionManager.parent.widthOffset = Qt.binding(function() {
             return parent.width * 0.2
@@ -198,6 +239,7 @@ Item {
             minuteArc.requestPaint()
             dateCanvas.requestPaint()
             dayCanvas.requestPaint()
+            batteryArc.requestPaint()
         }
     }
 }
